@@ -1,0 +1,33 @@
+appId: ${APP_PACKAGE}
+name: "APPSV004 - Consulta colector por NPE digitado"
+tags:
+  - smoke
+# Dato de prueba por defecto (colector ANDA con deuda). Se puede sobrescribir con -e NPE_CODE=...
+env:
+  NPE_CODE: "2307000000023900083645306262"
+---
+# Arrange - Preparacion (login independiente por test, reutiliza flujos de APPSV002)
+- launchApp:
+    stopApp: true
+- runFlow:
+    file: ../../subflows/login_flow.yaml
+    env:
+      USER_NAME: ${TEST_USER}
+      USER_PASS: ${TEST_PASS}
+# El modal "Sesion duplicada" puede aparecer despues del subflow de modales
+- extendedWaitUntil:
+    visible: "Mis productos|Sesi.n duplicada"
+    timeout: 20000
+- runFlow:
+    when:
+      visible: "Sesi.n duplicada"
+    commands:
+      - tapOn: "Continuar"
+- extendedWaitUntil:
+    visible: "Mis productos"
+    timeout: 20000
+# Act + Assert - Consulta del colector por NPE
+- runFlow:
+    file: ../../subflows/consulta_npe_flow.yaml
+    env:
+      NPE: ${NPE_CODE}

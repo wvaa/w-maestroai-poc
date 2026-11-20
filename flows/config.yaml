@@ -1,0 +1,11 @@
+# Configuración del workspace de Maestro (raíz: flows/)
+# Referencia: https://docs.maestro.dev/reference/workspace-configuration
+#
+# Las rutas son relativas a flows/. Solo se ejecutan como tests los YAML de
+# tests/ y sus subcarpetas (`**` es recursivo). screens/, subflows/ y data/
+# quedan fuera automáticamente porque no coinciden con este patrón.
+# Para excluir un archivo concreto, añade un patrón con prefijo `!`
+# (ej. '!tests/smoke/APPSV099_wip.yaml').
+
+flows:
+  - "tests/**"

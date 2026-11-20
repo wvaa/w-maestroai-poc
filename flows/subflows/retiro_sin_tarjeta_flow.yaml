@@ -1,0 +1,70 @@
+﻿# Subflow: Retiro sin tarjeta (Android) - flujo exitoso con monto por defecto (Otro monto = $5)
+# Precondicion: usuario en el Home (login previo). Selectores: screens/android/rst.yaml
+appId: ${APP_PACKAGE}
+---
+# Home -> Mis atajos (el atajo no siempre esta anclado al Home)
+- scrollUntilVisible:
+    element:
+      text: "Mis atajos"
+    direction: DOWN
+    optional: true
+- tapOn:
+    text: "Ver todos"
+    rightOf: "Mis atajos"
+    below: "Mis productos"
+    above: "Transfiere y paga a tus favoritos"
+# Tutorial de Mis atajos (solo primera vez)
+- runFlow:
+    when:
+      visible: "Presiona el icono de la derecha"
+    commands:
+      - tapOn: "Continuar"
+- runFlow:
+    when:
+      visible: "Ordena tu Home"
+    commands:
+      - tapOn: "Entendido"
+- extendedWaitUntil:
+    visible: "Anclados al Home"
+    timeout: 10000
+- takeScreenshot: RST_01_mis_atajos
+# Mis atajos -> Retirar sin Tarjeta (lista Compose)
+- scrollUntilVisible:
+    element:
+      text: "Retirar sin Tarjeta"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    text: "Retirar sin Tarjeta"
+# Formulario
+- extendedWaitUntil:
+    visible: "Tu Cuenta"
+    timeout: 10000
+- assertVisible: "Cuenta De Ahorro"
+- assertVisible: "Otro monto"
+- assertVisible:
+    id: ".*draggableButton.*"
+- takeScreenshot: RST_02_formulario
+# Generar codigo (swipe)
+- swipe:
+    from:
+      id: ".*draggableButton.*"
+    direction: RIGHT
+    duration: 1500
+# Modal de confirmacion
+- extendedWaitUntil:
+    visible: "Generar.s un c.digo para retirar \\$[0-9,]+\\.[0-9]{2} de tu cuenta [0-9]+"
+    timeout: 10000
+- takeScreenshot: RST_03_modal_confirmacion
+- tapOn: "Confirmar"
+# Resultado (variante exito)
+- extendedWaitUntil:
+    visible: "C.digo generado exitosamente"
+    timeout: 30000
+- assertVisible: "[0-9]{7}"
+- assertVisible: "N.mero de referencia"
+- assertVisible: "Vigencia de c.digo"
+- assertVisible: "Monto"
+- assertVisible: "Hacer otro retiro"
+- takeScreenshot: RST_04_codigo_generado
+

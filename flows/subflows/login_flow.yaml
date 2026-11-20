@@ -1,0 +1,24 @@
+# Subflow reutilizable: inicio de sesión
+# Parámetros (vía runFlow env):
+#   USER_NAME = nombre de usuario
+#   USER_PASS = contraseña
+appId: ${APP_PACKAGE}
+---
+- runFlow:
+    file: ../screens/common/login_screen.yaml
+    env:
+      ACTION: SUBMIT_CREDENTIALS
+      USER_NAME: ${USER_NAME}
+      USER_PASS: ${USER_PASS}
+
+# Esperar a que el login termine antes de manejar los modales
+- extendedWaitUntil:
+    notVisible:
+      id: ".*loginButton"
+    timeout: 30000
+
+- runFlow:
+    file: dismiss_post_login_modals_flow.yaml
+
+- waitForAnimationToEnd:
+    timeout: 5000

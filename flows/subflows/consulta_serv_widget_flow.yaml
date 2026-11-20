@@ -1,0 +1,75 @@
+# Subflow: Consulta de servicio desde el widget "Transfiere y paga a tus favoritos" (Android)
+# Ruta: Home > Ver todos (favoritos) > Mis favoritos > Pagos > favorito > formulario Pagar servicio
+# Precondicion: usuario en el Home (login previo). Selectores: screens/android/servicios_widget.yaml
+# Parametros (via runFlow env):
+#   FAV_ALIAS = alias del favorito de pagos a consultar (ej. "Casa")
+# No ejecuta el pago (no se toca el control "Desliza para pagar").
+appId: ${APP_PACKAGE}
+---
+# Caso 1: Home -> widget de favoritos
+- scrollUntilVisible:
+    element:
+      text: "Transfiere y paga a tus favoritos"
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    text: "Ver todos"
+    rightOf: "Transfiere y paga a tus favoritos"
+    below: "Mis atajos"
+# Caso 2: Ver todos -> tutorial (solo primera vez, opcional) o Mis favoritos
+- tapOn:
+    text: "Ver todos"
+    rightOf: "Transfiere y paga a tus favoritos"
+    below: "Mis atajos"
+- tapOn:
+    text: "Continuar"
+    optional: true
+- tapOn:
+    text: "Continuar"
+    optional: true
+- tapOn:
+    text: "Entendido"
+    optional: true
+- extendedWaitUntil:
+    visible: "Mis favoritos"
+    timeout: 15000
+- assertVisible: "Anclados al Home"
+- assertVisible: "Todos mis favoritos"
+- assertVisible: "Transferencias"
+- assertVisible: "Pagos"
+# Caso 3: pestana Pagos -> favorito
+- tapOn: "Pagos"
+- scrollUntilVisible:
+    element:
+      text: ${FAV_ALIAS}
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: SRVW_01_favoritos_pagos
+- tapOn: ${FAV_ALIAS}
+# Caso 4: formulario Pagar servicio (favorito con deuda) o sin deuda
+- extendedWaitUntil:
+    visible: "Servicio a pagar|Est.s al d.a con tus pagos.*"
+    timeout: 20000
+- runFlow:
+    when:
+      visible: "Est.s al d.a con tus pagos.*"
+    commands:
+      - takeScreenshot: SRVW_02_sin_deuda
+- runFlow:
+    when:
+      visible: "Servicio a pagar"
+    commands:
+      - assertVisible: "Pagar servicio"
+      - assertVisible: "Tu producto"
+      - assertVisible: "(?s)Cuenta de Ahorro\\n\\$[0-9,]+\\.[0-9]{2}\\n[0-9]+"
+      - assertVisible: "Cambiar"
+      - assertVisible:
+          text: ${FAV_ALIAS}
+          below: "Servicio a pagar"
+      - assertVisible:
+          text: "\\$[0-9,]+\\.[0-9]{2}"
+          below: "Servicio a pagar"
+      - assertVisible: "No\\. de asociaci.n: [0-9]+"
+      - assertVisible: "Fecha de cargo: [0-9]{2}/[0-9]{2}/[0-9]{4}"
+      - assertVisible: "Desliza para pagar"
+      - takeScreenshot: SRVW_02_formulario_pagar_servicio

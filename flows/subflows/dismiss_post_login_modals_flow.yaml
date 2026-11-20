@@ -1,0 +1,23 @@
+# Subflow reutilizable: cierra los interstitials que pueden aparecer tras el login.
+# Varían entre sesiones y pueden aparecer en cadena; son pantallas Compose sin ids,
+# por eso se usa el texto del botón. Cada paso se omite si su pantalla no aparece.
+# Si aparece un interstitial nuevo, agrégalo aquí.
+appId: ${APP_PACKAGE}
+---
+# Modal "Acepta pagos sin contacto con tu celular"
+- tapOn:
+    text: "Entendido"
+    optional: true
+
+# Onboarding "Agrega tus Tarjetas CUSCATLAN a Google Wallet"
+# (regex con '.' en lugar de 'á' para no depender de la codificación)
+- tapOn:
+    text: "Configurar m.s tarde"
+    optional: true
+
+# Modal "Sesión duplicada" (aparece si quedó otra sesión activa, ej. ejecuciones seguidas)
+- runFlow:
+    when:
+      visible: "Sesi.n duplicada"
+    commands:
+      - tapOn: "Continuar"

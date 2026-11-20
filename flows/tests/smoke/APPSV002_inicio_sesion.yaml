@@ -1,0 +1,23 @@
+appId: ${APP_PACKAGE}
+name: "APPSV002 - Inicio de sesión"
+tags:
+  - disabled
+---
+# Arrange - Preparación
+- launchApp:
+    stopApp: true
+
+# Act - Ejecución
+- runFlow:
+    file: ../../subflows/login_flow.yaml
+    env:
+      USER_NAME: ${TEST_USER}
+      USER_PASS: ${TEST_PASS}
+
+# Assert - Validación: pantalla de inicio cargada
+# (no se valida el saludo "Hola, <nombre>" porque depende del cliente)
+- extendedWaitUntil:
+    visible: "Mis productos"
+    timeout: 20000
+- assertNotVisible: "Sesi.n duplicada"
+#- takeScreenshot: APPSV002_home

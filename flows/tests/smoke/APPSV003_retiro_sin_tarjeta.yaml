@@ -1,0 +1,21 @@
+﻿appId: ${APP_PACKAGE}
+name: "APPSV003 - Retiro sin tarjeta"
+tags:
+  - smoke
+---
+# Arrange - Preparacion (login independiente por test)
+- launchApp:
+    stopApp: true
+- runFlow:
+    file: ../../subflows/login_flow.yaml
+    env:
+      USER_NAME: ${TEST_USER}
+      USER_PASS: ${TEST_PASS}
+- extendedWaitUntil:
+    visible: "Mis productos"
+    timeout: 20000
+# Act - Ejecucion del flujo de retiro sin tarjeta
+- runFlow:
+    file: ../../subflows/retiro_sin_tarjeta_flow.yaml
+# Assert - codigo generado
+#- takeScreenshot: APPSV003_codigo_generado

@@ -1,0 +1,103 @@
+# Subflow: Consulta de colector por NPE digitado (Android)
+# Ruta: Home > Mis atajos > Pagar servicio > Otro servicio > Escanea tu factura
+#       > Digitar NPE > Confirmar NPE > card del colector
+# Precondicion: usuario en el Home (login previo). Selectores: screens/android/npe.yaml
+# Parametros (via runFlow env):
+#   NPE = numero NPE de la factura
+# No ejecuta el pago (no se toca el control "Desliza para pagar").
+appId: ${APP_PACKAGE}
+---
+# Caso 1: Home -> widget Mis atajos
+- scrollUntilVisible:
+    element:
+      text: "Mis atajos"
+    direction: DOWN
+- assertVisible:
+    text: "Ver todos"
+    rightOf: "Mis atajos"
+    below: "Mis productos"
+    above: "Transfiere y paga a tus favoritos"
+# Caso 2: Ver todos -> tutorial (solo primera vez) o listado de atajos
+- tapOn:
+    text: "Ver todos"
+    rightOf: "Mis atajos"
+    below: "Mis productos"
+    above: "Transfiere y paga a tus favoritos"
+- runFlow:
+    when:
+      visible: "Presiona el icono de la derecha"
+    commands:
+      - tapOn: "Continuar"
+- runFlow:
+    when:
+      visible: "Ordena tu Home"
+    commands:
+      - tapOn: "Entendido"
+- extendedWaitUntil:
+    visible: "Anclados al Home"
+    timeout: 10000
+- takeScreenshot: NPE_01_mis_atajos
+# Caso 3: Mis atajos -> Pagar servicio (buscador, recientes, favoritos, otro servicio)
+- scrollUntilVisible:
+    element:
+      text: "Pagar servicio"
+    direction: DOWN
+    centerElement: true
+- tapOn: "Pagar servicio"
+- extendedWaitUntil:
+    visible: "Otro servicio"
+    timeout: 15000
+- assertVisible: "Buscar favorito"
+- assertVisible: "Recientes"
+- assertVisible: "Favoritos"
+- takeScreenshot: NPE_02_pagar_servicio
+# Caso 4: Otro servicio -> Escanea tu factura -> instrucciones del escaner
+- tapOn: "Otro servicio"
+- extendedWaitUntil:
+    visible: "Escanea tu factura"
+    timeout: 15000
+- tapOn: "Escanea tu factura"
+- extendedWaitUntil:
+    visible: "Digitar NPE"
+    timeout: 10000
+- assertVisible: "Entendido"
+- assertVisible: "Aseg.rate de limpiar tu c.mara.*"
+- takeScreenshot: NPE_03_instrucciones_scanner
+# Caso 5: Digitar NPE -> formulario
+- tapOn: "Digitar NPE"
+- extendedWaitUntil:
+    visible: "NPE de tu factura"
+    timeout: 10000
+- assertVisible: "Tu producto"
+- assertVisible: "Confirmar NPE"
+# Caso 6: ingreso de NPE -> boton Confirmar NPE habilitado
+- tapOn: "NPE de tu factura"
+- inputText: ${NPE}
+- hideKeyboard
+- assertVisible:
+    text: "Confirmar NPE"
+    enabled: true
+- takeScreenshot: NPE_04_formulario_npe
+# Caso 7: Confirmar NPE -> card con la deuda del colector
+- tapOn: "Confirmar NPE"
+- extendedWaitUntil:
+    visible: "Servicio a pagar|Est.s al d.a con tus pagos.*"
+    timeout: 20000
+# Caso 9: colector sin deuda
+- runFlow:
+    when:
+      visible: "Est.s al d.a con tus pagos.*"
+    commands:
+      - takeScreenshot: NPE_05_sin_deuda
+# Casos 7-8: colector con deuda
+- runFlow:
+    when:
+      visible: "Servicio a pagar"
+    commands:
+      - assertVisible:
+          text: "\\$[0-9,]+\\.[0-9]{2}"
+          below: "Servicio a pagar"
+      - assertVisible: "No\\. de asociaci.n: [0-9]+"
+      - assertVisible: "Fecha de cargo: [0-9]{2}/[0-9]{2}/[0-9]{4}"
+      - assertVisible: "Desliza para pagar"
+      - takeScreenshot: NPE_05_card_colector

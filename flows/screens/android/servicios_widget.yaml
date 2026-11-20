@@ -1,0 +1,116 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Referencia de selectores: WIDGET "Transfiere y paga a tus favoritos" - Android
+# Recorrido: Home -> Ver todos -> Mis favoritos -> Pagos -> favorito "Casa" (ANDA)
+#            -> formulario Pagar servicio (con deuda)
+#            -> favorito "CAESS sin fondos" -> "Estás al día con tus pagos" (sin deuda)
+# ───────────────────────────────────────────────────────────────────────────────
+# Extraídos con inspect_screen (MCP Maestro) en dispositivo real Samsung
+# (R5CW5076MGH), app UAT (APP_PACKAGE), tras el login de TEST_USER.
+#
+# Archivo de REFERENCIA (no es un flow ejecutable). config.yaml solo ejecuta
+# tests/**, por lo que este archivo no se lanza como test.
+#
+# Notas generales:
+# - Home, Mis favoritos y las tarjetas son Jetpack Compose: sin resource-id.
+#   Los textos llegan como `txt` (TextView) y se resuelven con `text:`.
+# - "Pagar servicio" (formulario) es Flutter: los textos llegan como a11y
+#   (content-desc) y también se resuelven con `text:`. Algunos nodos agrupan
+#   varias líneas separadas por "\n" (ej. card de cuenta): usar regex con "(?s)".
+# - text: en Maestro es regex full-match IGNORE_CASE. Se usa "." en lugar de
+#   letras acentuadas (á, é, ó, ú) para no depender de la codificación.
+# - Datos dinámicos (saldos, cuentas, montos, fechas, titular) se validan con
+#   regex, no literal.
+# - Hay 4 "Ver todos" en el Home y cada uno abre una pantalla distinta. Un
+#   `rightOf` solo NO basta (tocó el de "Ofertas y productos"); hay que acotar
+#   con rightOf + below, como en `ver_todos_favoritos`.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── 1. HOME ───────────────────────────────────────────────────────────────────
+home:
+  logo:                    { text: "App Logo" }          # content-desc
+  menu:                    { text: "Menu" }              # content-desc
+  virtual_store:           { text: "Virtual store" }     # content-desc
+  saludo:                  { text: "Hola," }
+  seccion_ofertas:         { text: "Ofertas y productos" }
+  seccion_mis_productos:   { text: "Mis productos" }
+  seccion_mis_atajos:      { text: "Mis atajos" }
+  seccion_favoritos:       { text: "Transfiere y paga a tus favoritos" }   # visible sin scroll
+  # "Ver todos" de la sección de favoritos (el último del Home).
+  # Acotado con rightOf + below para no tocar el de Ofertas / Productos / Atajos.
+  ver_todos_favoritos:
+    text: "Ver todos"
+    rightOf: "Transfiere y paga a tus favoritos"
+    below: "Mis atajos"
+
+# ── 2. TUTORIAL DE FAVORITOS (3 pantallas, solo primera vez, opcional) ───────
+# NO OBSERVADO: en el dispositivo de exploración el tutorial ya se había visto,
+# así que no apareció. Los botones vienen de la descripción del caso; los textos
+# de cada pantalla del tutorial quedan por capturar en un dispositivo limpio.
+# Cada paso se debe tocar con `optional: true`.
+tutorial_favoritos:
+  btn_continuar: { text: "Continuar" }                  # pantallas 1 y 2
+  btn_entendido: { text: "Entendido" }                  # pantalla 3
+
+# ── 3. MIS FAVORITOS — Compose ───────────────────────────────────────────────
+mis_favoritos:
+  btn_back:               { text: "Back" }               # content-desc
+  titulo:                 { text: "Mis favoritos" }
+  btn_ayuda:              { text: "Ayuda" }              # content-desc
+  btn_editar:             { text: "Editar" }             # content-desc
+  seccion_anclados:       { text: "Anclados al Home" }
+  seccion_todos:          { text: "Todos mis favoritos" }
+  # Pestañas (nodos clickables con un TextView hijo)
+  tab_transferencias:     { text: "Transferencias" }
+  tab_pagos:              { text: "Pagos" }
+  # Cada tarjeta es una View clickable con 3 TextView hermanos (NO un nodo
+  # agrupado): alias / número de colector / nombre del colector.
+  # Los anclados repiten alias de la lista; el tap por alias toca el primero que
+  # encuentre. Alias observados (datos de la cuenta de prueba):
+  #   Anclados: "Clesa", "ANDA sinfondos", "CAESS sin fondos"
+  #   Pagos:    "ANDA corriente" (3240347), "Casa" (1694473), "Fernanda Margoth"
+  fav_pago_casa:          { text: "Casa" }               # colector ANDA, no. 1694473
+  fav_pago_casa_numero:   { text: "1694473" }
+  fav_pago_casa_colector: { text: "ANDA", below: "Casa" }
+  # Carrusel de anclados: fila de la lista de favoritos de pagos (scroll vertical)
+  # Usar scrollUntilVisible + centerElement antes de tapOn si el favorito no se ve.
+
+# ── 4. PAGAR SERVICIO (formulario del favorito) — Flutter ────────────────────
+# Se abre al tocar el card del favorito. Sin resource-id; todo es a11y.
+pagar_servicio:
+  btn_back:           { point: "7%, 7%" }               # ImageView sin label [0,95][158,253]
+  titulo:             { text: "Pagar servicio" }
+  seccion_producto:   { text: "Tu producto" }
+  # Card cuenta origen (un solo nodo con 3 líneas: tipo\nsaldo\nnúmero)
+  card_cuenta:        { text: "(?s)Cuenta de Ahorro\\n\\$[0-9,]+\\.[0-9]{2}\\n[0-9]+" }
+  btn_cambiar_cuenta: { text: "Cambiar" }               # Button clickable
+  seccion_servicio:   { text: "Servicio a pagar" }
+  alias_favorito:     { text: "Casa", below: "Servicio a pagar" }        # alias del favorito
+  monto:              { text: "\\$[0-9,]+\\.[0-9]{2}", below: "Servicio a pagar" }   # ej. $16.48
+  no_asociacion:      { text: "No\\. de asociaci.n: [0-9]+" }           # ej. 1694473
+  fecha_cargo:        { text: "Fecha de cargo: [0-9]{2}/[0-9]{2}/[0-9]{4}" }
+  titular:            { text: ".+", below: "Fecha de cargo.*", above: "Desliza para pagar" }
+  icono_card:         { point: "88%, 40%" }              # ImageView clickable sin label [923,920][990,988]
+  label_swipe:        { text: "Desliza para pagar" }
+  control_pagar:      { text: "Pagar" }                  # NO usar en consulta: ejecuta el pago
+
+# ── 5. ESTÁS AL DÍA CON TUS PAGOS (colector sin deuda) — Flutter ─────────────
+# OBSERVADO al tocar el favorito "CAESS sin fondos" (colector CAESS,
+# no. 200002741225) en la pestaña Pagos de Mis favoritos. Sin resource-id;
+# los textos son a11y (content-desc) y se resuelven con `text:`.
+# Nota: "CAESS sin fondos" también aparece en "Anclados al Home". `tapOn` toca
+# la primera coincidencia; ambos abren el mismo favorito.
+mis_favoritos_sin_deuda:
+  fav_pago_caess:          { text: "CAESS sin fondos" }   # alias exacto (mayúsculas indiferentes)
+  fav_pago_caess_numero:   { text: "200002741225" }
+  fav_pago_caess_colector: { text: "CAESS", below: "CAESS sin fondos" }
+
+sin_deuda:
+  btn_back:          { point: "7%, 7%" }                 # ImageView clickable sin label [0,95][158,253]
+  ilustracion:       { point: "50%, 25%" }               # ImageView decorativo [188,253][892,915], no clickable
+  titulo:            { text: "Est.s al d.a con tus pagos" }
+  descripcion:       { text: "No tienes facturas pendientes por pagar de este servicio\\." }
+  btn_otro_pago:     { text: "Realizar otro pago" }      # Button clickable
+  # Validación recomendada:
+  #   - extendedWaitUntil:
+  #       visible: { text: "Est.s al d.a con tus pagos" }
+  #       timeout: 15000

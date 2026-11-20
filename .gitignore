@@ -1,0 +1,62 @@
+# ─── Secretos y configuración local ──────────────────────────────────────────
+.env
+.env.*
+
+# ─── Artefactos del runner (generados en cada ejecución) ──────────────────────
+artifacts/
+reports/
+tests/test-suite.json
+
+# ─── Apps móviles (APK / IPA) ─────────────────────────────────────────────────
+# Los binarios de la app no se versionan — se generan en el pipeline de CI/CD
+# o se referencian por ruta local en APP_PATH / IPA_PATH del .env
+*.apk
+*.ipa
+*.aab
+app/
+
+# ─── Maestro ──────────────────────────────────────────────────────────────────
+.maestro/
+maestro-*.xml
+maestro-report/
+
+# Screenshots y videos capturados durante los tests
+flows/screenshots/
+flows/videos/
+flows/recordings/
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+
+# ─── Kiro IDE ─────────────────────────────────────────────────────────────────
+# La configuración de MCP contiene rutas absolutas del entorno local
+.kiro/settings/mcp.json
+
+# ─── Node.js ──────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# ─── macOS ────────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# ─── JVM / Gradle (Maestro CLI es una app JVM) ────────────────────────────────
+.gradle/
+build/
+*.class
+
+# ─── Flows de demo/prueba (no commitear) ──────────────────────────────────────
+flows/DEMO_*.yaml
+flows/TEST_*.yaml
+
+*.png
+# Plantilla de variables (si se versiona)
+.env.example

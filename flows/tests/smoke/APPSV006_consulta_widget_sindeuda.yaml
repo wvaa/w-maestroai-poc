@@ -1,0 +1,33 @@
+appId: ${APP_PACKAGE}
+name: "APPSV006 - Consulta de servicio sin deuda desde widget de favoritos"
+tags:
+  - smoke
+# Dato de prueba por defecto (favorito de pagos CAESS sin deuda). Se puede sobrescribir con -e FAV_ALIAS=...
+env:
+  FAV_ALIAS: "CAESS sin fondos"
+---
+# Arrange - Preparacion (login independiente por test)
+- launchApp:
+    stopApp: true
+- runFlow:
+    file: ../../subflows/login_flow.yaml
+    env:
+      USER_NAME: ${TEST_USER}
+      USER_PASS: ${TEST_PASS}
+# El modal "Sesion duplicada" puede aparecer despues del subflow de modales
+- extendedWaitUntil:
+    visible: "Mis productos|Sesi.n duplicada"
+    timeout: 20000
+- runFlow:
+    when:
+      visible: "Sesi.n duplicada"
+    commands:
+      - tapOn: "Continuar"
+- extendedWaitUntil:
+    visible: "Mis productos"
+    timeout: 20000
+# Act + Assert - Consulta del favorito sin deuda desde el widget
+- runFlow:
+    file: ../../subflows/consulta_serv_widget_sindeuda_flow.yaml
+    env:
+      FAV_ALIAS: ${FAV_ALIAS}

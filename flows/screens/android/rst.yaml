@@ -1,0 +1,135 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Referencia de selectores: RETIRO SIN TARJETA (RST) - Android
+# ───────────────────────────────────────────────────────────────────────────────
+# Extraídos con inspect_screen en dispositivo real Samsung (R5CW5076MGH),
+# app UAT, desde el Home tras el login de APPSV002.
+# Última actualización: 16/11/2026. Recorrido completo validado hasta la
+# pantalla de resultado (variante éxito).
+#
+# Archivo de REFERENCIA (no es un flow ejecutable). config.yaml solo ejecuta
+# tests/**, por lo que este archivo no se lanza como test.
+#
+# Notas generales:
+# - Las pantallas son Jetpack Compose: casi no hay ids; se usa texto visible.
+# - Los ids Compose aparecen como "android:id/`Nombre`" (con backticks);
+#   usar regex parcial: id: ".*Nombre.*".
+# - text: en Maestro es regex full-match IGNORE_CASE. Se usa "." en lugar de
+#   letras acentuadas (á, ó, ´) para no depender de la codificación.
+# - Datos dinámicos (saldos, cuentas, fechas) se validan con regex, no literal.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── 1. HOME ───────────────────────────────────────────────────────────────────
+home:
+  logo:                  { text: "App Logo" }            # content-desc
+  menu:                  { text: "Menu" }                # content-desc
+  saludo:                { text: "Hola," }
+  btn_tienda_virtual:    { text: "Virtual store" }       # content-desc
+  seccion_ofertas:       { text: "Ofertas y productos" }
+  seccion_mis_productos: { text: "Mis productos" }
+  seccion_mis_atajos:    { text: "Mis atajos" }
+  # Hay 4 "Ver todos" en el Home (Ofertas, Mis productos, Mis atajos, Favoritos).
+  # rightOf solo NO basta: con él se abre "Ofertas y productos". Acotar así:
+  ver_todos_atajos:
+    text: "Ver todos"
+    rightOf: "Mis atajos"
+    below: "Mis productos"
+    above: "Transfiere y paga a tus favoritos"
+  # Carrusel horizontal de atajos (sin id). Visto en esta cuenta:
+  # Transferir, CUSCA Acepta, Transferencias internacionales, [Icon].
+  # "Retirar sin Tarjeta" NO estaba anclado al widget en esta cuenta.
+  atajo_retiro_widget:   { text: "Retirar sin Tarjeta" } # solo si está anclado
+  carrusel_atajos_swipe: { start: "85%, 81%", end: "15%, 81%" }  # coord. relativas
+
+# ── 2. TUTORIAL MIS ATAJOS (solo primera vez) ────────────────────────────────
+# En la última ejecución (16/11/2026 10:48) NO apareció: tratar como opcional.
+tutorial_atajos:
+  # Pantalla 1
+  texto_paso_1:  { text: "Presiona el icono de la derecha" }
+  btn_continuar: { text: "Continuar" }
+  # Pantalla 2
+  texto_paso_2:  { text: "Ordena tu Home" }
+  btn_entendido: { text: "Entendido" }
+
+# ── 3. MIS ATAJOS (listado) ───────────────────────────────────────────────────
+mis_atajos:
+  titulo:               { text: "Mis atajos" }
+  btn_back:             { text: "Back" }                 # content-desc
+  btn_ayuda:            { text: "Ayuda" }                # content-desc
+  btn_editar:           { text: "Editar" }               # content-desc
+  seccion_anclados:     { text: "Anclados al Home" }
+  seccion_pagos:        { text: "Pagos" }
+  seccion_cuentas:      { text: "Cuentas" }
+  # Lista Compose: usar scrollUntilVisible + centerElement antes de tapOn
+  atajo_retiro_sin_tarjeta: { text: "Retirar sin Tarjeta" }   # sección Cuentas
+
+# ── 4. FORMULARIO RETIRO SIN TARJETA ─────────────────────────────────────────
+formulario_rst:
+  titulo:        { text: "Retirar sin Tarjeta" }
+  btn_back:      { text: "Back" }                        # content-desc
+  descripcion:   { text: "Retira tu dinero f.cil y r.pido sin tarjeta, generando un c.digo de retiro que puedes usar en nuestros ATM.s y Puntos de Pago\\." }
+  # Sección Tu cuenta (card cuenta origen)
+  seccion_tu_cuenta:  { text: "Tu Cuenta" }
+  cuenta_tipo:        { text: "Cuenta De Ahorro" }
+  cuenta_saldo:       { text: "\\$[0-9,]+\\.[0-9]{2}", below: "Tu Cuenta" }
+  cuenta_numero:      { text: "[0-9]{15}", below: "Tu Cuenta" }   # ej. 000000012056334
+  btn_cambiar_cuenta: { text: "Cambiar" }
+  # Montos rápidos (carrusel horizontal scrollable)
+  label_montos:  { text: "¿Cu.nto deseas retirar\\?" }
+  monto_25:      { text: "\\$25" }
+  monto_50:      { text: "\\$50" }
+  monto_75:      { text: "\\$75" }
+  monto_100:     { text: "\\$100" }
+  monto_150:     { text: "\\$150" }
+  # Otro monto (stepper de 5 en 5; valor inicial 5)
+  label_otro_monto: { text: "Otro monto" }
+  btn_restar:       { id: ".*WithdrawalSubtract.*" }
+  btn_sumar:        { id: ".*WithdrawalAdd.*" }
+  valor_otro_monto: { text: "[0-9]+", below: "Otro monto" }   # validado: 5 -> 10 -> 5
+  # Disclaimer de comisión (el texto real termina con espacio)
+  disclaimer_comision: { text: "El retiro de efectivo en nuestra red de ATM.s y ATM\\+, no tiene comisi.n.*" }
+  # Control swipe
+  label_swipe:       { text: "Desliza para generar c.digo" }
+  texto_control:     { text: "Generar c.digo" }
+  btn_draggable:     { id: ".*draggableButton.*" }
+  # Gesto validado:  - swipe: { from: { id: ".*draggableButton.*" }, direction: RIGHT, duration: 1500 }
+
+# ── 5. MODAL CONFIRMACIÓN ────────────────────────────────────────────────────
+modal_confirmacion:
+  # Texto real SIN punto final: "Generarás un código para retirar $5.00 de tu cuenta 000000012056334"
+  mensaje:       { text: "Generar.s un c.digo para retirar \\$[0-9,]+\\.[0-9]{2} de tu cuenta [0-9]+" }
+  btn_confirmar: { text: "Confirmar" }
+  btn_regresar:  { text: "Regresar" }
+
+# ── 6. MODAL VERIFICANDO ─────────────────────────────────────────────────────
+modal_verificando:
+  # NO OBSERVADO en inspect_screen (transición rápida). Texto tomado del caso 12.
+  mensaje: { text: "Verificando tu transacci.n.*" }
+
+# ── 7. PANTALLA DE RESULTADO ─────────────────────────────────────────────────
+resultado:
+  # Comunes (observados)
+  logo:              { text: "App Logo" }                # content-desc
+  btn_cerrar:        { id: ".*closeButton.*" }
+  contenedor:        { id: ".*AndroidViewColumn.*" }
+  icono_resultado:   { text: "Close", above: "C.digo.*" } # content-desc del ícono (ImageView)
+  fecha_hora:        { text: "[0-9]{2}/[0-9]{2}/[0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}" }
+  label_vigencia:    { text: "Vigencia de c.digo" }
+  valor_vigencia:    { text: "[0-9]+ horas\\.?", below: "Vigencia de c.digo" }  # parametrizado
+  label_monto:       { text: "Monto" }
+  valor_monto:       { text: "\\$[0-9,]+\\.[0-9]{2}", below: "Monto" }
+  btn_hacer_otro:    { text: "Hacer otro retiro" }
+  link_compartir:    { text: "Compartir" }
+  icono_compartir:   { text: "Share icon" }              # content-desc
+
+  # Variante ÉXITO: OBSERVADA con inspect_screen (16/11/2026 10:49, monto $5.00).
+  exito:
+    titulo:            { text: "C.digo generado exitosamente" }
+    mensaje:           { text: "Ingresa tu c.digo y monto, para retirar tu dinero\\." }
+    codigo:            { text: "[0-9]{7}" }                       # ej. 7179802
+    label_referencia:  { text: "N.mero de referencia" }
+    valor_referencia:  { text: "[0-9]+", below: "N.mero de referencia" }  # ej. 14117
+
+  # Variante ERROR (observada en la ejecución del 16/11/2026 10:22:06 del dispositivo)
+  error:
+    titulo:  { text: "C.digo no enviado" }
+    mensaje: { text: "Verifica que la fecha y hora autom.ticas est.n activadas en tu tel.fono e int.ntalo de nuevo\\..*" }

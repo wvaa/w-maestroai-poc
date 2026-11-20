@@ -1,0 +1,53 @@
+# Subflow: Consulta de servicio SIN deuda desde el widget "Transfiere y paga a tus favoritos" (Android)
+# Ruta: Home > Ver todos (favoritos) > Mis favoritos > Pagos > favorito sin deuda > "Estas al dia con tus pagos"
+# Precondicion: usuario en el Home (login previo). Selectores: screens/android/servicios_widget.yaml
+# Parametros (via runFlow env):
+#   FAV_ALIAS = alias del favorito de pagos sin deuda (ej. "CAESS sin fondos")
+appId: ${APP_PACKAGE}
+---
+# Home -> widget de favoritos
+- scrollUntilVisible:
+    element:
+      text: "Transfiere y paga a tus favoritos"
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    text: "Ver todos"
+    rightOf: "Transfiere y paga a tus favoritos"
+    below: "Mis atajos"
+# Ver todos -> tutorial (solo primera vez, opcional) o Mis favoritos
+- tapOn:
+    text: "Ver todos"
+    rightOf: "Transfiere y paga a tus favoritos"
+    below: "Mis atajos"
+- tapOn:
+    text: "Continuar"
+    optional: true
+- tapOn:
+    text: "Continuar"
+    optional: true
+- tapOn:
+    text: "Entendido"
+    optional: true
+- extendedWaitUntil:
+    visible: "Mis favoritos"
+    timeout: 15000
+- assertVisible: "Anclados al Home"
+- assertVisible: "Todos mis favoritos"
+# Pestana Pagos -> favorito sin deuda
+- tapOn: "Pagos"
+- scrollUntilVisible:
+    element:
+      text: ${FAV_ALIAS}
+    direction: DOWN
+    centerElement: true
+- tapOn: ${FAV_ALIAS}
+# Pantalla sin deuda
+- extendedWaitUntil:
+    visible: "Est.s al d.a con tus pagos"
+    timeout: 15000
+- assertVisible: "No tienes facturas pendientes por pagar de este servicio\\."
+- assertVisible: "Realizar otro pago"
+# El formulario de pago no debe mostrarse
+- assertNotVisible: "Desliza para pagar"
+- takeScreenshot: SRVW_03_sin_deuda

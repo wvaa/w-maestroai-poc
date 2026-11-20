@@ -1,0 +1,42 @@
+# Page Object: pantalla de inicio de sesión
+# Parámetros (vía runFlow env):
+#   ACTION    = SUBMIT_CREDENTIALS
+#   USER_NAME = nombre de usuario
+#   USER_PASS = contraseña
+appId: ${APP_PACKAGE}
+---
+# Validar que la pantalla cargó (el saludo cambia según la hora, por eso se usa el campo)
+- extendedWaitUntil:
+    visible:
+      id: ".*usernameEditText"
+    timeout: 20000
+
+# Snackbar de sesión expirada: se superpone al botón Ingresar
+- runFlow:
+    when:
+      visible: "Cerramos la sesi.n por inactividad.*"
+    commands:
+      - tapOn: "CERRAR"
+
+- runFlow:
+    when:
+      true: ${ACTION == 'SUBMIT_CREDENTIALS'}
+    commands:
+      # El usuario puede venir precargado si se marcó "Recordar usuario"
+      - tapOn:
+          id: ".*usernameEditText"
+      - eraseText
+      - inputText: ${USER_NAME}
+      - tapOn:
+          id: ".*passwordEditText"
+      - eraseText
+      - inputText: ${USER_PASS}
+      - hideKeyboard
+      # El botón se habilita solo cuando ambos campos tienen valor
+      - extendedWaitUntil:
+          visible:
+            id: ".*loginButton"
+            enabled: true
+          timeout: 5000
+      - tapOn:
+          id: ".*loginButton"

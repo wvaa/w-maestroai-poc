@@ -1,0 +1,132 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Referencia de selectores: CONSULTA PAGO DE SERVICIO POR NPE (digitado) - Android
+# ───────────────────────────────────────────────────────────────────────────────
+# Extraídos con `maestro hierarchy` (CLI) en dispositivo real Samsung
+# (R5CW5076MGH), app UAT, desde el Home tras el login de APPSV002.
+# Fecha: 16/11/2026. NPE de prueba: 2307000000023900083645306262 (colector ANDA).
+#
+# Archivo de REFERENCIA (no es un flow ejecutable). config.yaml solo ejecuta
+# tests/**, por lo que este archivo no se lanza como test.
+#
+# Notas generales:
+# - Home y Mis atajos son Jetpack Compose (texto visible, sin ids).
+# - Desde "Pagar servicio" en adelante las pantallas son Flutter: no hay
+#   resource-id; los textos llegan como accessibilityText (a11y) y Maestro los
+#   resuelve con `text:`. Algunos nodos agrupan varias líneas separadas por
+#   "\n" (ej. tarjetas de favoritos/cuenta): usar regex con ".*" o "(?s)".
+# - text: en Maestro es regex full-match IGNORE_CASE. Se usa "." en lugar de
+#   letras acentuadas (á, é, ó, ú, ¿) para no depender de la codificación.
+# - Datos dinámicos (saldos, cuentas, montos, fechas, titular) se validan con
+#   regex, no literal.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── 1. HOME ───────────────────────────────────────────────────────────────────
+home:
+  logo:                  { text: "App Logo" }            # content-desc
+  menu:                  { text: "Menu" }                # content-desc
+  saludo:                { text: "Hola," }
+  seccion_mis_productos: { text: "Mis productos" }
+  seccion_mis_atajos:    { text: "Mis atajos" }          # requiere scroll DOWN
+  # Hay 4 "Ver todos" en el Home; acotar con rightOf + below + above:
+  ver_todos_atajos:
+    text: "Ver todos"
+    rightOf: "Mis atajos"
+    below: "Mis productos"
+    above: "Transfiere y paga a tus favoritos"
+
+# ── 2. TUTORIAL MIS ATAJOS (solo primera vez, opcional) ──────────────────────
+tutorial_atajos:
+  texto_paso_1:  { text: "Presiona el icono de la derecha" }
+  btn_continuar: { text: "Continuar" }
+  texto_paso_2:  { text: "Ordena tu Home" }
+  btn_entendido: { text: "Entendido" }
+
+# ── 3. MIS ATAJOS (listado) ───────────────────────────────────────────────────
+mis_atajos:
+  titulo:              { text: "Mis atajos" }
+  btn_back:            { text: "Back" }                  # content-desc
+  seccion_anclados:    { text: "Anclados al Home" }
+  seccion_pagos:       { text: "Pagos" }
+  # Lista Compose: scrollUntilVisible + centerElement antes de tapOn
+  atajo_pagar_servicio: { text: "Pagar servicio" }       # sección Pagos
+
+# ── 4. PAGAR SERVICIO (favoritos) — Flutter ──────────────────────────────────
+pagar_servicio:
+  btn_back:           { point: "7%, 7%" }                # ImageView sin label [0,95][158,253]
+  titulo:             { text: "Pagar servicio" }
+  subtitulo:          { text: ".Qu. servicio de tus favoritos deseas pagar\\?" }
+  input_buscar_favorito: { text: "Buscar favorito" }     # hintText del EditText
+  seccion_recientes:  { text: "Recientes" }              # carrusel horizontal
+  seccion_favoritos:  { text: "Favoritos" }
+  # Cada tarjeta (reciente/favorito) es un nodo con 3 líneas: alias\nnúmero\ncolector
+  # ej. "ANDA corriente\n3240347\nANDA"
+  tarjeta_favorito:   { text: "(?s).+\\n[0-9]+\\n.+" }
+  btn_otro_servicio:  { text: "Otro servicio" }
+
+# ── 5. OTRO SERVICIO (categorías) — Flutter ──────────────────────────────────
+otro_servicio:
+  titulo:               { text: "Pagar servicio" }
+  subtitulo:            { text: ".Qu. servicio deseas pagar\\?" }
+  input_buscar_servicio: { text: "Buscar servicio" }     # hintText
+  cat_agua:             { text: "Agua" }
+  cat_educacion:        { text: "Educaci.n" }
+  cat_recargar_celular: { text: "Recargar celular" }
+  cat_financieras_afp:  { text: "Financieras y AFP" }
+  cat_electricidad:     { text: "Electricidad" }
+  cat_almacenes:        { text: "Almacenes" }
+  cat_automoviles:      { text: "Autom.viles" }
+  cat_impuestos:        { text: "Impuestos" }
+  ver_todas:            { text: "Ver todas" }
+  btn_escanea_factura:  { text: "Escanea tu factura" }   # Button
+
+# ── 6. INSTRUCCIONES DEL ESCÁNER — Flutter ───────────────────────────────────
+instrucciones_scanner:
+  btn_cerrar:      { point: "89%, 9%" }                  # ImageView sin label [878,141][1058,276]
+  titulo:          { text: "Escanea tu factura" }
+  instruccion_1:   { text: "Aseg.rate de limpiar tu c.mara y ubicarte en un lugar con buena iluminaci.n\\." }
+  instruccion_2:   { text: "Enfoca el c.digo de barra y mientras lo escaneas, no muevas tu celular\\." }
+  instruccion_3:   { text: "Puedes escanear los siguientes colectores:.*" }
+  instruccion_4:   { text: "Si tu colector no est. en la lista.*" }
+  btn_entendido:   { text: "Entendido" }                 # abre la cámara
+  texto_sin_codigo: { text: ".Tu factura no tiene c.digo de barra o tienes problema con tu c.mara\\?" }
+  link_digitar_npe: { text: "Digitar NPE" }              # Button
+
+# ── 7. FORMULARIO NPE — Flutter ──────────────────────────────────────────────
+formulario_npe:
+  titulo:            { text: "Pagar servicio" }
+  seccion_producto:  { text: "Tu producto" }
+  # Card cuenta origen (un solo nodo con 3 líneas: tipo\nsaldo\nnúmero)
+  card_cuenta:       { text: "(?s)Cuenta de Ahorro\\n\\$[0-9,]+\\.[0-9]{2}\\n[0-9]+" }
+  btn_cambiar_cuenta: { text: "Cambiar" }
+  descripcion:       { text: "Ten a la mano tu factura, puedes digitar el NPE o escanear el c.digo de barras" }
+  input_npe:         { text: "NPE de tu factura" }       # hintText del EditText
+  btn_scanner_icono: { point: "90%, 40%" }               # ImageView sin label [880,856][1035,1010]
+  btn_confirmar_npe: { text: "Confirmar NPE" }           # Button; habilitado tras ingresar NPE
+  # Validación de habilitado:
+  #   - assertVisible: { text: "Confirmar NPE", enabled: true }
+
+# ── 8. CARD DEL COLECTOR (resultado de la consulta) — Flutter ────────────────
+consulta_colector:
+  seccion_servicio:  { text: "Servicio a pagar" }
+  nombre_colector:   { text: "ANDA", below: "Servicio a pagar" }   # depende del NPE
+  monto:             { text: "\\$[0-9,]+\\.[0-9]{2}", below: "Servicio a pagar" }  # ej. $2.39
+  no_asociacion:     { text: "No\\. de asociaci.n: [0-9]+" }        # ej. 0836453
+  fecha_cargo:       { text: "Fecha de cargo: [0-9]{2}/[0-9]{2}/[0-9]{4}" }
+  titular:           { text: ".+", below: "Fecha de cargo.*", above: "Desliza para pagar" }
+  btn_editar:        { text: "Editar" }
+  icono_card:        { point: "85%, 38%" }               # ImageView sin label [889,853][956,920]
+  label_swipe:       { text: "Desliza para pagar" }
+  control_pagar:     { text: "Pagar" }                   # NO usar en consulta: ejecuta el pago
+
+# ── 9. FORMULARIO DEL COLECTOR (tap en nombre del proveedor) ─────────────────
+# OBSERVADO (16/11/2026 15:33): tapOn { text: "ANDA", below: "Servicio a pagar" }
+# NO cambia de pantalla; el nodo del nombre no es clickable. La pantalla de la
+# sección 8 ya es el formulario de pago del colector (Tu producto + Servicio a
+# pagar + Desliza para pagar). El único elemento clickable junto al nombre es
+# `icono_card` (sin label); no se exploró para no alterar datos de la cuenta.
+# Confirmar con el equipo funcional qué espera el caso 8.
+
+# ── 10. SIN DEUDA ────────────────────────────────────────────────────────────
+sin_deuda:
+  # NO OBSERVADO: el NPE de prueba tiene deuda ($2.39). Texto tomado del caso 9.
+  titulo: { text: "Est.s al d.a con tus pagos.*" }

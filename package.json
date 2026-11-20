@@ -1,0 +1,29 @@
+{
+  "name": "poc01-maestro",
+  "version": "0.1.0",
+  "description": "Suite de automatización Maestro multiplataforma con orquestador BrowserStack y reporte HTML.",
+  "private": true,
+  "scripts": {
+    "test": "node scripts/run-maestro-browserstack.js",
+    "report": "node scripts/generate-report.js",
+    "fix-endings": "node scripts/fix-line-endings.js",
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "ping-db": "node scripts/ping-db.js",
+    "service:ensure": "node scripts/ensure-service.js",
+    "service:stop": "node scripts/ensure-service.js --stop"
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.0",
+    "browserstack-local": "^1.5.13",
+    "dotenv": "^17.4.2",
+    "form-data": "^4.0.6",
+    "fs-extra": "^11.4.0",
+    "node-fetch": "^2.6.7",
+    "express": "^4.19.2",
+    "pg": "^8.23.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
